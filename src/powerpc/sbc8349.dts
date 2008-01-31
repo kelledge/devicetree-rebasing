@@ -1,7 +1,11 @@
 /*
- * MPC8313E RDB Device Tree Source
+ * SBC8349E Device Tree Source
  *
- * Copyright 2005, 2006, 2007 Freescale Semiconductor Inc.
+ * Copyright 2007 Wind River Inc.
+ *
+ * Paul Gortmaker (see MAINTAINERS for contact information)
+ *
+ *	-based largely on the Freescale MPC834x_MDS dts.
  *
  * This program is free software; you can redistribute  it and/or modify it
  * under  the terms of  the GNU General  Public License as published by the
@@ -12,8 +16,8 @@
 /dts-v1/;
 
 / {
-	model = "MPC8313ERDB";
-	compatible = "MPC8313ERDB", "MPC831xRDB", "MPC83xxRDB";
+	model = "SBC8349E";
+	compatible = "SBC834xE";
 	#address-cells = <1>;
 	#size-cells = <1>;
 
@@ -29,13 +33,13 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 
-		PowerPC,8313@0 {
+		PowerPC,8349@0 {
 			device_type = "cpu";
 			reg = <0x0>;
 			d-cache-line-size = <32>;
 			i-cache-line-size = <32>;
-			d-cache-size = <16384>;
-			i-cache-size = <16384>;
+			d-cache-size = <32768>;
+			i-cache-size = <32768>;
 			timebase-frequency = <0>;	// from bootloader
 			bus-frequency = <0>;		// from bootloader
 			clock-frequency = <0>;		// from bootloader
@@ -44,67 +48,18 @@
 
 	memory {
 		device_type = "memory";
-		reg = <0x00000000 0x08000000>;	// 128MB at 0
+		reg = <0x00000000 0x10000000>;	// 256MB at 0
 	};
 
-	localbus@e0005000 {
-		#address-cells = <2>;
-		#size-cells = <1>;
-		compatible = "fsl,mpc8313-elbc", "fsl,elbc", "simple-bus";
-		reg = <0xe0005000 0x1000>;
-		interrupts = <77 0x8>;
-		interrupt-parent = <&ipic>;
-
-		// CS0 and CS1 are swapped when
-		// booting from nand, but the
-		// addresses are the same.
-		ranges = <0x0 0x0 0xfe000000 0x00800000
-		          0x1 0x0 0xe2800000 0x00008000
-		          0x2 0x0 0xf0000000 0x00020000
-		          0x3 0x0 0xfa000000 0x00008000>;
-
-		flash@0,0 {
-			#address-cells = <1>;
-			#size-cells = <1>;
-			compatible = "cfi-flash";
-			reg = <0x0 0x0 0x800000>;
-			bank-width = <2>;
-			device-width = <1>;
-		};
-
-		nand@1,0 {
-			#address-cells = <1>;
-			#size-cells = <1>;
-			compatible = "fsl,mpc8313-fcm-nand",
-			             "fsl,elbc-fcm-nand";
-			reg = <0x1 0x0 0x2000>;
-
-			u-boot@0 {
-				reg = <0x0 0x100000>;
-				read-only;
-			};
-
-			kernel@100000 {
-				reg = <0x100000 0x300000>;
-			};
-
-			fs@400000 {
-				reg = <0x400000 0x1c00000>;
-			};
-		};
-	};
-
-	soc8313@e0000000 {
+	soc8349@e0000000 {
 		#address-cells = <1>;
 		#size-cells = <1>;
 		device_type = "soc";
-		compatible = "simple-bus";
 		ranges = <0x0 0xe0000000 0x00100000>;
 		reg = <0xe0000000 0x00000200>;
 		bus-frequency = <0>;
 
 		wdt@200 {
-			device_type = "watchdog";
 			compatible = "mpc83xx_wdt";
 			reg = <0x200 0x100>;
 		};
@@ -140,15 +95,29 @@
 			mode = "cpu";
 		};
 
+		/* phy type (ULPI or SERIAL) are only types supported for MPH */
+		/* port = 0 or 1 */
+		usb@22000 {
+			compatible = "fsl-usb2-mph";
+			reg = <0x22000 0x1000>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			interrupt-parent = <&ipic>;
+			interrupts = <39 0x8>;
+			phy_type = "ulpi";
+			port1;
+		};
 		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
 		usb@23000 {
+			device_type = "usb";
 			compatible = "fsl-usb2-dr";
 			reg = <0x23000 0x1000>;
 			#address-cells = <1>;
 			#size-cells = <0>;
 			interrupt-parent = <&ipic>;
 			interrupts = <38 0x8>;
-			phy_type = "utmi_wide";
+			dr_mode = "otg";
+			phy_type = "ulpi";
 		};
 
 		mdio@24520 {
@@ -156,16 +125,17 @@
 			#size-cells = <0>;
 			compatible = "fsl,gianfar-mdio";
 			reg = <0x24520 0x20>;
-			phy1: ethernet-phy@1 {
-				interrupt-parent = <&ipic>;
-				interrupts = <19 0x8>;
-				reg = <0x1>;
-				device_type = "ethernet-phy";
-			};
-			phy4: ethernet-phy@4 {
+
+			phy0: ethernet-phy@19 {
 				interrupt-parent = <&ipic>;
 				interrupts = <20 0x8>;
-				reg = <0x4>;
+				reg = <0x19>;
+				device_type = "ethernet-phy";
+			};
+			phy1: ethernet-phy@1a {
+				interrupt-parent = <&ipic>;
+				interrupts = <21 0x8>;
+				reg = <0x1a>;
 				device_type = "ethernet-phy";
 			};
 		};
@@ -173,25 +143,27 @@
 		enet0: ethernet@24000 {
 			cell-index = <0>;
 			device_type = "network";
-			model = "eTSEC";
+			model = "TSEC";
 			compatible = "gianfar";
 			reg = <0x24000 0x1000>;
 			local-mac-address = [ 00 00 00 00 00 00 ];
-			interrupts = <37 0x8 36 0x8 35 0x8>;
+			interrupts = <32 0x8 33 0x8 34 0x8>;
 			interrupt-parent = <&ipic>;
-			phy-handle = < &phy1 >;
+			phy-handle = <&phy0>;
+			linux,network-index = <0>;
 		};
 
 		enet1: ethernet@25000 {
 			cell-index = <1>;
 			device_type = "network";
-			model = "eTSEC";
+			model = "TSEC";
 			compatible = "gianfar";
 			reg = <0x25000 0x1000>;
 			local-mac-address = [ 00 00 00 00 00 00 ];
-			interrupts = <34 0x8 33 0x8 32 0x8>;
+			interrupts = <35 0x8 36 0x8 37 0x8>;
 			interrupt-parent = <&ipic>;
-			phy-handle = < &phy4 >;
+			phy-handle = <&phy1>;
+			linux,network-index = <1>;
 		};
 
 		serial0: serial@4500 {
@@ -214,18 +186,19 @@
 			interrupt-parent = <&ipic>;
 		};
 
+		/* May need to remove if on a part without crypto engine */
 		crypto@30000 {
-			device_type = "crypto";
 			model = "SEC2";
 			compatible = "talitos";
-			reg = <0x30000 0x7000>;
+			reg = <0x30000 0x10000>;
 			interrupts = <11 0x8>;
 			interrupt-parent = <&ipic>;
-			/* Rev. 2.2 */
-			num-channels = <1>;
+			num-channels = <4>;
 			channel-fifo-len = <24>;
-			exec-units-mask = <0x0000004c>;
-			descriptor-types-mask = <0x0122003f>;
+			exec-units-mask = <0x0000007e>;
+			/* desc mask is for rev2.0,
+			 * we need runtime fixup for >2.0 */
+			descriptor-types-mask = <0x01010ebf>;
 		};
 
 		/* IPIC
@@ -248,20 +221,15 @@
 		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
 		interrupt-map = <
 
-				/* IDSEL 0x0E -mini PCI */
-				 0x7000 0x0 0x0 0x1 &ipic 18 0x8
-				 0x7000 0x0 0x0 0x2 &ipic 18 0x8
-				 0x7000 0x0 0x0 0x3 &ipic 18 0x8
-				 0x7000 0x0 0x0 0x4 &ipic 18 0x8
+				/* IDSEL 0x11 */
+				 0x8800 0x0 0x0 0x1 &ipic 20 0x8
+				 0x8800 0x0 0x0 0x2 &ipic 21 0x8
+				 0x8800 0x0 0x0 0x3 &ipic 22 0x8
+				 0x8800 0x0 0x0 0x4 &ipic 23 0x8>;
 
-				/* IDSEL 0x0F - PCI slot */
-				 0x7800 0x0 0x0 0x1 &ipic 17 0x8
-				 0x7800 0x0 0x0 0x2 &ipic 18 0x8
-				 0x7800 0x0 0x0 0x3 &ipic 17 0x8
-				 0x7800 0x0 0x0 0x4 &ipic 18 0x8>;
 		interrupt-parent = <&ipic>;
-		interrupts = <66 0x8>;
-		bus-range = <0x0 0x0>;
+		interrupts = <0x42 0x8>;
+		bus-range = <0 0>;
 		ranges = <0x02000000 0x0 0x90000000 0x90000000 0x0 0x10000000
 			  0x42000000 0x0 0x80000000 0x80000000 0x0 0x10000000
 			  0x01000000 0x0 0x00000000 0xe2000000 0x0 0x00100000>;
