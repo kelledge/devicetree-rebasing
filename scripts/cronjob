@@ -41,6 +41,16 @@ for branch in $BRANCHES ; do
 done
 echo
 
+trap '
+if [ -n "$OUTPUT" ] ; then
+    echo "---------------------------------------------------------------------"
+    echo "Filter Output:"
+    echo "---------------------------------------------------------------------"
+    echo "$OUTPUT"
+fi
+' EXIT
+
+OUTPUT=`(
 echo "Switching to master branch"
 git checkout master
 
@@ -51,6 +61,7 @@ echo
 echo "Filtering"
 ./scripts/filter.sh
 echo
+) 2>&1 `
 
 #git push --dry-run origin filter-state upstream/dts upstream/master
 #git push --dry-run origin --tags
@@ -62,6 +73,10 @@ git checkout -b ${LATEST} origin/master
 git merge --no-edit upstream/dts
 REF=$(git show-ref --verify refs/heads/${LATEST})
 echo "Testing: ${TESTBRANCH}: ${REF}"
+if git log ${LATEST} -- MAINTAINERS | grep --quiet . ; then
+    echo "Filter branch has upstream-only content (MAINTAINERS file)"
+    exit 1
+fi
 echo
 
 make DTC=/home/ianc/devel/dtc/dtc -k -s || true # This almost always fails...
