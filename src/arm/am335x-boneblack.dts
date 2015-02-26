@@ -83,7 +83,7 @@
         reg = <0x68>;
     };
 
-}
+};
 
 &uart2 {
 	pinctrl-names = "default";
@@ -106,25 +106,10 @@
 	status = "okay";
 };
 
-&lcd {
-    pinctrl-names = "default";
-    pinctrl-0 = <&lcd_pins>;
-    dim = <2 8>;
-    rs-gpio = <&gpio0 27 GPIO_ACTIVE_HIGH>;
-    rw-gpio = <&gpio2 1 GPIO_ACTIVE_HIGH>;
-    e-gpio = <&gpio0 22 GPIO_ACTIVE_HIGH>;
-    data-gpio = <
-        &gpio2 22 GPIO_ACTIVE_HIGH /* DB4 */
-        &gpio2 23 GPIO_ACTIVE_HIGH /* DB5 */
-        &gpio2 24 GPIO_ACTIVE_HIGH /* DB6 */
-        &gpio2 25 GPIO_ACTIVE_HIGH /* DB7 */
-    >;
-};
-
 &lcdc {
 	status = "okay";
 };
 
 &rtc {
-	system-power-controller;
+	status = "disabled";
 };
