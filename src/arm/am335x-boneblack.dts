@@ -34,6 +34,13 @@
 };
 
 &am33xx_pinmux {
+        i2c2_pins: pinmux_i2c2_pins {
+            pinctrl-single,pins = <
+                0x178 (PIN_INPUT_PULLUP | MUX_MODE3) /* uart1_ctsn.i2c2_sda */
+                0x17c (PIN_INPUT_PULLUP | MUX_MODE3) /* uart1_rtsn.i2c2_scl */
+            >;
+        };
+
         uart2_rs485_pins: pinmux_uart1_pins {
             pinctrl-single,pins = <
                 0x150 (PIN_INPUT_PULLUP | MUX_MODE1 ) /* spi0_sckl.uart2_rxd */\
@@ -63,6 +70,20 @@
             >;
         };
 };
+
+&i2c2 {
+    status = "okay";
+    pinctrl-names = "default";
+    pinctrl-0 = <&i2c2_pins>;
+
+    clock-frequency = <100000>;
+
+    cape_rtc0: cape_rtc0@68 {
+        compatible = "maxim,ds1307";
+        reg = <0x68>;
+    };
+
+}
 
 &uart2 {
 	pinctrl-names = "default";
