@@ -1,0 +1,15 @@
+Source: linux-devicetree
+Section: unknown
+Priority: extra
+Maintainer: Kevin Elledge (PetroPower) <kelledge@petropower.com>
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 3.9.3
+Homepage: https://git.kernel.org/pub/scm/linux/kernel/git/devicetree/devicetree-rebasing.git
+#Vcs-Git: git://git.debian.org/collab-maint/linux-devicetree.git
+#Vcs-Browser: http://git.debian.org/?p=collab-maint/linux-devicetree.git;a=summary
+
+Package: linux-devicetree
+Architecture: all
+Depends: ${misc:Depends}
+Description: <insert up to 60 chars description>
+ <insert long description, indented with spaces>
