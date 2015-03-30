@@ -69,6 +69,12 @@
                 0xec (PIN_OUTPUT_PULLDOWN | MUX_MODE7 ) /* DB7 gpio2[25] P8_30 */
             >;
         };
+
+        eeprom_wp_pins: pinmux_eeprom_wp_pins {
+            pinctrl-single,pins = <
+                0x7c (PIN_OUTPUT_PULLDOWN | MUX_MODE7 ) /* WP gpio1[29] P8_26 */
+            >;
+        };
 };
 
 &i2c2 {
@@ -83,6 +89,10 @@
         reg = <0x68>;
     };
 
+    cape_eeprom: cape_eeprom0@50 {
+        compatible = "atmel,24c256";
+        reg = <0x50>;
+    };
 };
 
 &uart2 {
