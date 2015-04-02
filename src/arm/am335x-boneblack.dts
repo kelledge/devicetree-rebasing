@@ -72,7 +72,7 @@
 
         eeprom_wp_pins: pinmux_eeprom_wp_pins {
             pinctrl-single,pins = <
-                0x7c (PIN_OUTPUT_PULLDOWN | MUX_MODE7 ) /* WP gpio1[29] P8_26 */
+                0x7c (PIN_OUTPUT_PULLUP | MUX_MODE7 ) /* WP gpio1[29] P8_26 */
             >;
         };
 };
