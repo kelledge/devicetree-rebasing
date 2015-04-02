@@ -2,3 +2,8 @@
 *.cmd
 *.tmp
 *.swp
+
+debian/*.log
+debian/*.substvars
+debian/*.debhelper
+debian/files
