@@ -123,3 +123,7 @@
 &rtc {
 	status = "disabled";
 };
+
+&usb0 {
+    dr_mode = "peripheral";
+};
